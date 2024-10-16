@@ -20,7 +20,7 @@ impl Simulation {
         let leaf_capacity = 16;
         let thread_capacity = 1024;
 
-        let bodies: Vec<Body> = utils::uniform_disc(n);
+        let bodies: Vec<Body> = utils::black_hole_scenario(n);
         let quadtree = Quadtree::new(theta, epsilon, leaf_capacity, thread_capacity);
 
         Self {

@@ -1,6 +1,46 @@
 use crate::body::Body;
 use ultraviolet::Vec2;
 
+pub fn black_hole_scenario(n: usize) -> Vec<Body> {
+    fastrand::seed(0);
+    let inner_radius = 0.62; // volume ~= 1
+    let outer_radius = (n as f32).cbrt() * 10_000.0;
+    println!("outer_radius: {}", outer_radius);
+
+    let mut bodies: Vec<Body> = Vec::with_capacity(n);
+
+    let m = 4e14;
+    let center = Body::new(Vec2::zero(), Vec2::zero(), m as f32, inner_radius);
+    bodies.push(center);
+
+    while bodies.len() < n {
+        let a = fastrand::f32() * std::f32::consts::TAU;
+        let b = fastrand::f32() * std::f32::consts::PI;
+        let (sin, cos) = a.sin_cos();
+        let (sinb, cosb) = b.sin_cos();
+        let pos = Vec2::new(cos * sinb, sin * sinb) * outer_radius;
+        let vel = Vec2::new(-sin, cos);
+        let mass = 1.0f32;
+        let radius = mass.cbrt();
+
+        bodies.push(Body::new(pos, vel, mass, radius));
+    }
+
+    bodies.sort_by(|a, b| a.pos.mag_sq().total_cmp(&b.pos.mag_sq()));
+    let mut mass = 0.0;
+    for i in 0..n {
+        mass += bodies[i].mass;
+        if bodies[i].pos == Vec2::zero() {
+            continue;
+        }
+
+        let v = (mass / bodies[i].pos.mag()).sqrt();
+        bodies[i].vel *= v;
+    }
+
+    bodies
+}
+
 pub fn uniform_disc(n: usize) -> Vec<Body> {
     fastrand::seed(0);
     let inner_radius = 25.0;
