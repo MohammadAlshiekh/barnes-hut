@@ -1,6 +1,6 @@
 use std::{
     f32::consts::{PI, TAU},
-    sync::atomic::{AtomicBool, Ordering},
+    sync::atomic::{AtomicBool, AtomicU64, Ordering},
 };
 
 use crate::{
@@ -23,6 +23,13 @@ pub static BODIES: Lazy<Mutex<Vec<Body>>> = Lazy::new(|| Mutex::new(Vec::new()))
 pub static QUADTREE: Lazy<Mutex<Vec<Node>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
 pub static SPAWN: Lazy<Mutex<Vec<Body>>> = Lazy::new(|| Mutex::new(Vec::new()));
+pub static FPS: Lazy<AtomicU64> = Lazy::new(|| AtomicU64::new(0));
+
+pub fn set_fps(fps: f64) {
+    // Convert f64 to u64 by multiplying by 100 to keep two decimal places
+    let fps_u64 = (fps * 100.0) as u64;
+    FPS.store(fps_u64, Ordering::Relaxed);
+}
 
 pub struct Renderer {
     pos: Vec2,
@@ -258,6 +265,10 @@ impl quarkstrom::Renderer for Renderer {
                         ui.add(egui::DragValue::new(&mut range.1).speed(0.05));
                     });
                 }
+
+                // Retrieve the FPS from AtomicU64, convert to f64 and divide by 100
+                let fps = FPS.load(Ordering::Relaxed) as f64 / 100.0;
+                ui.label(format!("FPS: {:.2}", fps));
             });
     }
 }

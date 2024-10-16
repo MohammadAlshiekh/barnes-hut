@@ -1,3 +1,4 @@
+use std::time::{Duration, Instant};
 use std::sync::atomic::Ordering;
 
 mod body;
@@ -22,22 +23,33 @@ fn main() {
     };
 
     let mut simulation = Simulation::new();
+    let mut fps_timer = Instant::now();
+    let mut frames = 0;
+    let mut fps = 0.0;
 
     std::thread::spawn(move || {
-	    loop {
-	        if renderer::PAUSED.load(Ordering::Relaxed) {
-	            std::thread::yield_now();
-	        } else {
-	            simulation.step();
-	        }
-	        render(&mut simulation);
-	    }
+        loop {
+            if renderer::PAUSED.load(Ordering::Relaxed) {
+                std::thread::yield_now();
+            } else {
+                simulation.step();
+            }
+            render(&mut simulation, fps);
+
+            // Count frames and calculate FPS every second
+            frames += 1;
+            if fps_timer.elapsed() >= Duration::from_secs(1) {
+                fps = frames as f64 / fps_timer.elapsed().as_secs_f64();
+                fps_timer = Instant::now();  // Reset the timer
+                frames = 0;  // Reset the frame counter
+            }
+        }
     });
 
     quarkstrom::run::<Renderer>(config);
 }
 
-fn render(simulation: &mut Simulation) {
+fn render(simulation: &mut Simulation, fps: f64) {
     let mut lock = renderer::UPDATE_LOCK.lock();
     for body in renderer::SPAWN.lock().drain(..) {
         simulation.bodies.push(body);
@@ -53,4 +65,7 @@ fn render(simulation: &mut Simulation) {
         lock.extend_from_slice(&simulation.quadtree.nodes);
     }
     *lock |= true;
+
+    // Pass FPS to the renderer for displaying
+    renderer::set_fps(fps);
 }
