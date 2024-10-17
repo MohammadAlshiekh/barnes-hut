@@ -12,7 +12,7 @@ pub fn black_hole_scenario(n: usize) -> Vec<Body> {
 
     let black_hole_density: f32 = 4e14; // 4e14 solar masses per parsec^3
 
-    let m = black_hole_density * inner_radius.powf(3.0) * PI;
+    let m = black_hole_density * inner_radius.powf(3.0) * PI * 4.0 / 3.0;   
     let center = Body::new(Vec2::zero(), Vec2::zero(), m as f32, inner_radius);
     bodies.push(center);
 
