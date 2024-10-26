@@ -82,3 +82,40 @@ pub fn uniform_disc(n: usize) -> Vec<Body> {
 
     bodies
 }
+
+pub fn uniform_ring(n: usize) -> Vec<Body> {
+    fastrand::seed(0);
+    let inner_radius = 2.0;
+    let outer_radius = (n as f32).sqrt() * 1.0;
+
+    let mut bodies: Vec<Body> = Vec::with_capacity(n);
+
+    let m = 1e6;
+    let center = Body::new(Vec2::zero(), Vec2::zero(), m as f32, inner_radius);
+    bodies.push(center);
+
+    while bodies.len() < n {
+        let a = fastrand::f32() * std::f32::consts::TAU;
+        let (sin, cos) = a.sin_cos();
+        let pos = Vec2::new(cos, sin) * outer_radius;
+        let vel = Vec2::new(-sin, cos);
+        let mass = 1.0f32;
+        let radius = mass.cbrt();
+
+        bodies.push(Body::new(pos, vel, mass, radius));
+    }
+
+    bodies.sort_by(|a, b| a.pos.mag_sq().total_cmp(&b.pos.mag_sq()));
+    let mut mass = 0.0;
+    for i in 0..n {
+        mass += bodies[i].mass;
+        if bodies[i].pos == Vec2::zero() {
+            continue;
+        }
+
+        let v = (mass / bodies[i].pos.mag()).sqrt();
+        bodies[i].vel *= v;
+    }
+
+    bodies
+}
