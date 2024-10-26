@@ -56,7 +56,7 @@ impl quarkstrom::Renderer for Renderer {
     fn new() -> Self {
         Self {
             pos: Vec2::zero(),
-            scale: 3600.0,
+            scale: 3600.0, // 1 is dramatic
 
             settings_window_open: false,
 
@@ -167,7 +167,7 @@ impl quarkstrom::Renderer for Renderer {
         ctx.clear_lines();
         ctx.clear_rects();
         ctx.set_view_pos(self.pos);
-        ctx.set_view_scale(self.scale);
+        ctx.set_view_scale(self.bodies.len() as f32 * self.scale / 100.0);
 
         if !self.bodies.is_empty() {
             if self.show_bodies {
