@@ -4,17 +4,26 @@ use std::f32::consts::PI;
 
 pub fn black_hole_scenario(n: usize) -> Vec<Body> {
     fastrand::seed(0);
-    let inner_radius = 1.0; // radius 0.62 = volume ~= 1
-    let outer_radius = (n as f32).cbrt() * inner_radius * 10_000.0;
-    println!("outer_radius: {} parsecs", outer_radius / 3.086e+16);
+    let inner_radius: f32 = 10_000.0; // radius 0.62 = volume ~= 1
+    let outer_radius = (n as f32).cbrt() * inner_radius * 1_000.0;
+    println!("outer_radius: {} Micro Parsec.", outer_radius / (3.086e+16 / 1.0e6));
 
     let mut bodies: Vec<Body> = Vec::with_capacity(n);
 
     let black_hole_density: f32 = 4e14; // 4e14 solar masses per parsec^3
 
-    let m = black_hole_density * inner_radius.powf(3.0) * PI * 4.0 / 3.0;   
-    let center = Body::new(Vec2::zero(), Vec2::zero(), m as f32, inner_radius);
-    bodies.push(center);
+    let pos_bh1 = Vec2::new(400_000.0, 0.0);
+    let pos_bh2 = Vec2::new(-400_000.0, 0.0);
+
+    let vel1 = Vec2::new(0.0, 0.5);
+    let vel2 = Vec2::new(0.0, -0.5);
+
+    let m = black_hole_density * inner_radius * PI * (4.0 / 3.0);
+    let black_hole_1 = Body::new(pos_bh1, vel1, m as f32, inner_radius);
+    let black_hole_2 = Body::new(pos_bh2, vel2, m as f32, inner_radius);
+
+    bodies.push(black_hole_1);
+    bodies.push(black_hole_2);
 
     while bodies.len() < n {
         let a = fastrand::f32() * std::f32::consts::TAU;
@@ -23,7 +32,7 @@ pub fn black_hole_scenario(n: usize) -> Vec<Body> {
         let (sinb, _cosb) = b.sin_cos();
         let pos = Vec2::new(cos * sinb, sin * sinb) * outer_radius;
         let vel = Vec2::new(-sin, cos);
-        let mass = 1.0f32;
+        let mass = fastrand::f32() * 10_000_000.0f32;
         let radius = mass.cbrt();
 
         bodies.push(Body::new(pos, vel, mass, radius));
